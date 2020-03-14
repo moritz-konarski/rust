@@ -1,2 +1,3 @@
-# rust
-playing around with rust
+# rust repository
+
+My first attempts at rust programs.
