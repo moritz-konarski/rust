@@ -145,4 +145,68 @@ valid after copying, like with integers
 
 ### Ownership and Functions
 
-- 
+- passing a variable to a function is similar to assigning values to variables,
+thus the same rules apply
+    ```
+    fn main() {
+        let s = String::from("hello");      // s comes into scope
+        takes_ownership(s);                 // value of s moves into 
+                                            // function
+                                            // it's no longer valid
+
+        let x = 5;                          // x comes into scope
+        makes_copy(x);                      // x is Copy and is thus 
+                                            // still valid
+    }   // x and then s go out of scope
+        // nothing special happes to s because it is already invalid
+    
+    fn takes_ownership(s: String) {         // s comes into scope
+        println!("{}", s);
+    }   // s goes out of scope and drop is called, memory is freed
+
+    fn makes_copy(i: i32) {                 // i comes into scope
+        println!("{}", i);
+    }   // i goes out of scope, not affecting x
+    ```
+- if `s` were to be used after the `takes_ownership(s)` was called, a compile
+time error would happen
+
+### Return Values and Scope
+
+- returning values can also transfer ownership
+    ```
+    fn main() {
+        let s1 = give_ownership();          // fn moves its return
+                                            // value to s1
+
+        let s2 = String::from("hello");     // s2 comes into scope
+
+        let s3 = takes_and_gives_back(s2);  // s2 moved into fn
+                                            // return value moved to s3
+    }   // s3 goes out of scope and is dropped, so does s1.
+        // s2 is already out of scope, so nothing happens
+
+    fn gives_ownership() -> String {        // will move return value
+                                            // into calling fn
+        let s = String::from("hello");      // s comes into scope
+        s                                   // s is returned and moves
+                                            // to the calling function
+    }   // nothing goes out of scope
+
+    fn takes_and_gives_back(s: String) -> String {
+                                            // s comes into scope
+        s                                   // s is returned and moves
+                                            // to the calling fn
+    }   // nothing goes out of scope
+    ```
+- assigning the value of a variable to another moves it
+- when an active variable goes out of scope, it is dropped
+- one option for returning ownership of the argument plus a result is to return
+a tuple from a function -- a better way to do it is to use _references_
+
+## References and Borrowing
+
+- if one uses a function that takes ownership and then has to return ownership
+so the argument can be used afterwards
+- passing references to functions instead of taking ownership is the solution
+to that
