@@ -210,3 +210,84 @@ a tuple from a function -- a better way to do it is to use _references_
 so the argument can be used afterwards
 - passing references to functions instead of taking ownership is the solution
 to that
+    ```
+    fn main() {
+        let s1 = String::from("hello");
+        let len = calculate_length(&s1);
+        println!("The length of '{}' is {}.", s1, len);
+    }
+
+    fn calculate_length(s: &String) -> usize {
+        s.len()
+    }
+    ```
+- ampersands '`&`' are _references_ and enable referring to values without
+taking ownership 
+- above, `s` points to `s1` which points to the actual value
+- dereferencing is done with `*`
+- `&s1` refers to the value of `s1` but does now own it -- the value will not
+be dropped when `s` goes out of scope
+- when functions have references as parameters it is called _borrowing_
+- references are immutable by default
+
+### Mutable References
+
+- creating a mutable string and then passing a mutable reference to a function
+allows variables to be modified using their references
+    ```
+    fn main() {
+        let mut s = String::from("hello");
+        change(&mut s);
+    }
+
+    fn change(s: &mut String) {
+        s.push_str(", world");
+    }
+    ```
+- big restriction: there can only be one mutable reference to a particular
+piece of data in a particular scope
+- this only allows restricted mutation -- less than most other languages
+- Rust can thus prevent _data races_ at compile time -- these three things need
+to be true: two or more pointers access data at the same time, at least one of
+the pointers is used to write to the data, there are no mechanisms to
+synchronize the access to the data
+- data races are undefined and difficult to diagnose
+- new scopes allow for more mutable references, just not simultaneous ones
+- we also cannot borrow data as mutable if it is also borrowed as immutable
+- if an immutable reference is being used it is not expected that the value
+changes at the same time
+- multiple immutable references are ok because nobody can change any of the
+data
+- some intricacies are: if immutable references are no longer used a mutable
+one can be created even if the other ones are technically still in scope
+- borrowing errors are annoying, but they prevent bugs at compile time
+
+### Dangling References
+
+- these are created when a reference to a non-existent memory exists, producing
+undefined behavior
+    ```
+    fn main() {
+        let ref_to_nothing = dangle();
+    }
+
+    fn dangle() -> &String {                // returns ref to str
+        let s = String::from("hello");      // s is new string
+
+        &s                                  // return ref to str
+    }   // s goes out of scope here and is dropped
+        // the reference now refers to nothing
+    ```
+- the simple solution here is to return the string with ownership instead
+
+### The Rules of References
+
+- at any given time, you can have _either_ one mutable reference _or_ any
+number of immutable references
+- references must always be valid
+
+## The Slice Type
+
+- slices do not have ownership
+- slices reference a contiguous sequence of elements in a collection rather
+than the whole collection
